@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<!--
+Created using JS Bin
+http://jsbin.com
+
+Copyright (c) 2018 by anonymous (http://jsbin.com/timuwahija/1/edit)
+
+Released under the MIT license: http://jsbin.mit-license.org
+-->
+<meta name="robots" content="noindex">
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>ToDo List</title>
+  <script src="lst.js" defer></script>
+  <style type="text/css">
+    body{
+       margin: auto;
+      
+    }
+
+    th{
+      text-align: center;
+    }
+    tr{
+      text-align: center;
+    }
+
+    .table_dark 
+    {
+      font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+      font-size: 14px;
+      width: 640px;
+      text-align: left;
+      border-collapse: collapse;
+      background: #252F48;
+      margin: auto;
+      margin-top: 20px;
+
+    }
+    .table_dark th 
+    {
+      color: #EDB749;
+      border-bottom: 1px solid #37B5A5;
+      padding: 12px 17px;
+    }
+    .table_dark td 
+    {
+      color: #CAD4D6;
+      border-bottom: 1px solid #37B5A5;
+      border-right:1px solid #37B5A5;
+      padding: 7px 17px;
+    }
+    .table_dark tr:last-child td 
+    {
+      border-bottom: none;
+    }
+    .table_dark td:last-child 
+    {
+      border-right: none;
+    }
+    .table_dark tr:hover td 
+    {
+      text-decoration: underline;
+    }
+    
+     body {background: url(https://html5book.ru/wp-content/uploads/2015/07/background39.png);} 
+    button {
+  text-decoration: none;
+  outline: none;
+  display: inline-block;
+  width: 140px;
+  height: 45px;
+  line-height: 45px;
+  border-radius: 45px;
+  margin: 10px 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  text-align: center;
+  letter-spacing: 3px;
+  font-weight: 600;
+  color: #524f4e;
+  background: white;
+  box-shadow: 0 8px 15px rgba(0,0,0,.1);
+  transition: .3s;
+}
+button:hover {
+  background: #2EE59D;
+  box-shadow: 0 15px 20px rgba(46,229,157,.4);
+  color: white;
+  transform: translateY(-7px);
+}
+    
+  </style>
+</head>
+<body>
+
+<br>
+<button onclick = "add()">Добавить</button>
+<input id="task_add" type="text">
+<br>
+<br>
+<button onclick = "remove()">Удалить</button>
+<input id="task_remove" type="number">
+<br>
+<br>
+<button onclick = "done()">Завершить</button>
+<input id="task_done" type="number">
+<br> 
+<br>
+<button onclick = "sort()">Сортировать</button>
+<input type="radio" name="type"  value="1" checked="checked">По алфавиту</input>
+<input type="radio" name="type"  value="2"/>По индексу</input>
+<br> 
+<br>
+</body>
+<table id="t1" border="1" class="table_dark">
+   <col valign="top">
+     <tr>
+      <th colspan="2">Выполняемые задания</th>
+    </tr>
+     <tr>
+      <th>№</th>
+      <th>Задание</th>
+    </tr>
+    </thead>
+    <tbody align="center" id='running_task'>
+    </tbody>
+</table>
+<table id="t2" border="1" class="table_dark">
+   <col valign="top">
+     <tr>
+      <th colspan="3">Архив</th>
+    </tr>
+     <tr>
+      <th>№</th>
+      <th>Задание</th>
+      <th>Время выполнения, с</th>
+    </tr>
+    </thead>
+    <tbody align="center" id='archive_task'>
+    </tbody>
+</table>
+<script id="jsbin-javascript">
+let runIndex = 1;
+let archiveIndex = 1;
+
+const active = new Map();
+const archive = new Map();
+
+const runTable = document.getElementById('running_task');
+const archiveTable = document.getElementById('archive_task');
+const taskAdd = document.getElementById('task_add');
+const taskRem = document.getElementById('task_remove');
+const taskDone = document.getElementById('task_done');
+const sortTypeElem = document.getElementsByName("type");
+
+function Struct(time, mission)
+{
+  this.time = time;
+  this.mission = mission;
+}
+
+function add()
+{
+  let mission = taskAdd.value;
+  let time = Date.now();
+  
+  active.set(runIndex, new Struct(time, mission));
+  
+  let tr = document.createElement('tr');
+  tr.id = runIndex;
+  
+  let ind_task = document.createElement('td'); 
+  ind_task.textContent = runIndex;
+  
+  let mis_task = document.createElement('td');
+  mis_task.textContent = mission;
+  
+  tr.appendChild(ind_task);
+  tr.appendChild(mis_task);
+  
+  runTable.appendChild(tr);
+  
+  runIndex++;
+  taskAdd.value = '';
+}
+
+function remove(index = Number.parseInt(taskRem.value))
+{
+  active.delete(index);
+  
+  let elem = document.getElementById(index);
+  if(elem != null)
+  {
+    elem.remove();
+  }
+  
+  taskRem.value = '';
+}
+
+function done()
+{
+  let index = Number.parseInt(taskDone.value);
+  let obj = active.get(index);
+
+  let delta = Date.now() - obj.time;
+  archive.set(archiveIndex, new Struct(delta, obj.mission));
+
+  let tr = document.createElement('tr');
+  tr.id = archiveIndex;
+  
+  let ind_task = document.createElement('td');
+  ind_task.textContent = archiveIndex;
+  
+  let time_task= document.createElement('td'); 
+  time_task.textContent = delta / 1000;
+  
+  let mis_task = document.createElement('td');
+  mis_task.textContent = obj.mission;
+  
+  tr.appendChild(ind_task);
+  tr.appendChild(mis_task);
+  tr.appendChild(time_task);
+  
+  archiveTable.appendChild(tr);
+  
+  remove(index);
+  
+  archiveIndex++;
+  
+  taskDone.value = '';
+}
+
+function sort()
+{
+  let sorted;
+
+  if(sortTypeElem[0].checked)
+  {
+    sorted = new Map(Array.from(active.entries()).sort((a,b) => a[1].mission > b[1].mission));
+  } 
+  else
+  {
+    sorted = new Map(Array.from(active.entries()).sort((a,b) => a[0] > b[0]));
+  }
+
+  while (runTable.firstChild) 
+  {
+      runTable.removeChild(runTable.firstChild);
+  }
+
+  for(let entry of sorted)
+  {
+    let tr = document.createElement('tr');
+    tr.id = entry[0];
+    
+    let ind_task = document.createElement('td'); 
+    ind_task.textContent = entry[0];
+    
+    let mis_task = document.createElement('td');
+    mis_task.textContent = entry[1].mission;
+    
+    tr.appendChild(ind_task);
+    tr.appendChild(mis_task);
+
+    runTable.appendChild(tr);
+  }
+}
+</script>
+</body>
+</html>
